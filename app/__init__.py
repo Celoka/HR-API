@@ -1,16 +1,16 @@
 import os
 
-from flask_api import FlaskAPI
+from flask import Flask
 from flask_bcrypt import Bcrypt
 
 from flask_sqlalchemy import SQLAlchemy
 from app.blueprints.base_blueprint import BaseBlueprint
 from flask_migrate import Migrate
-from app.utils.helper import get_env
+from config import ProdConfig
 
 
-app = FlaskAPI(__name__)
-app.config.from_object(get_env("FLASK_ENV"))
+app = Flask(__name__)
+app.config.from_object(ProdConfig)
 
 bcrypt = Bcrypt(app)
 db = SQLAlchemy(app)

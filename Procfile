@@ -1,2 +1,1 @@
-worker: gunicorn app:app --log-file=-
-worker: python manage.py run
+web: gunicorn -w 4 -b 0.0.0.0:8000 app:app
