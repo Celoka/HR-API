@@ -2,6 +2,7 @@ from app.controllers.base_controller import BaseController
 from app.services.leave_request_service import LeaveRequestService
 from app.services.user_service import User
 from app.utils.helper import conflict_handler, parse_calendar_events
+from app.utils.send_mail import send_email
 
 
 leave_types = ["Holiday",
@@ -18,7 +19,7 @@ class LeaveRequestController(BaseController):
         self.user_service = User()
 
     def create_leave_request(self):
-        user_id, leave_start, leave_end, event_type, description, email_address = self.request_params(
+        user_id, leave_start, leave_end, event_type, description = self.request_params(
             'userId',
             'leaveStart',
             'leaveEnd',
@@ -29,20 +30,38 @@ class LeaveRequestController(BaseController):
             return self.handle_response(f"Invalid request type '{event_type}' ", status_code=404)
 
         user = self.user_service.get(user_id)
+        manager = self.user_service.get(user.manager_id)
+        if manager:
+            return self.handle_response(f"Action cannot be performed. User has not been assigned a manager", status_code=403)
+
         if not user:
             return self.handle_response(f"This user does not exist", status_code=404)
+        
         leave_requests = self.leave_request_service.filter_by(**{
             'user_id': user.id,
             'status': 'Pending'})
 
-        pending_requests = [
-            leave_request for leave_request in leave_requests.items]
+        pending_requests = [leave_request for leave_request in leave_requests.items]
 
-        if len(pending_requests) > 0:
-            msg = "Cannot process request because user has pending leave request."
-            return self.handle_response("Incomplete Request", conflict_handler(msg, 'UserName: '+user.email_address), status_code=409)
+        # if len(pending_requests) > 0:
+        #     msg = "Cannot process request because user has pending leave request."
+        #     return self.handle_response("Incomplete Request", conflict_handler(msg, 'UserName: '+user.email_address), status_code=409)
+        
         new_leave_request = self.leave_request_service.create_leave_request(user_id, leave_start, leave_end, event_type, description
         )
+
+        subordinate_name = f'{user.first_name} {user.last_name}'
+        manager_name = f'{manager.first_name} {manager.last_name}'
+        email_subject = 'User Leave Request'
+        send_email(
+            to=manager.email_address,
+            subject=email_subject,
+            template='email_template',
+            user=manager_name,
+            subordinate=subordinate_name
+        )
+        print('Email Sent Successfully!')
+
         return self.handle_response('Ok', payload={'request': new_leave_request.serialize()}, status_code=201)
 
     def get_calendar_events(self, user_id):
