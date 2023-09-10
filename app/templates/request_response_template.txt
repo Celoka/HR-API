@@ -1,0 +1,6 @@
+Hello {{ user }},
+
+Your manager, {{ manager }}, has acted on your leave application. Please login to view leave status.
+
+Thank you.
+OOH Team

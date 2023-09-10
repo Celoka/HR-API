@@ -9,7 +9,7 @@ leave_types = ["Holiday",
                "Time off",
                "Sick leave", "Maternity leave",
                "Paternity leave", "Training day"]
-status_types = ["Approved", "Reject", "Pending"]
+status_types = ["Approved", "Rejected", "Pending"]
 
 
 class LeaveRequestController(BaseController):
@@ -19,8 +19,8 @@ class LeaveRequestController(BaseController):
         self.user_service = User()
 
     def create_leave_request(self):
-        user_id, leave_start, leave_end, event_type, description = self.request_params(
-            'userId',
+        current_user = self.request.user_obj
+        leave_start, leave_end, event_type, description = self.request_params(
             'leaveStart',
             'leaveEnd',
             'eventType',
@@ -29,14 +29,14 @@ class LeaveRequestController(BaseController):
         if event_type not in leave_types:
             return self.handle_response(f"Invalid request type '{event_type}' ", status_code=404)
 
-        user = self.user_service.get(user_id)
-        manager = self.user_service.get(user.manager_id)
-
-        if not manager:
-            return self.handle_response(f"Action cannot be performed. User has not been assigned a manager", status_code=403)
+        user = self.user_service.get(current_user['user_id'])
 
         if not user:
             return self.handle_response(f"This user does not exist", status_code=404)
+
+        if not user.manager:
+            return self.handle_response(f"Action cannot be performed. User has not been assigned a manager", status_code=403)
+
         
         leave_requests = self.leave_request_service.filter_by(**{
             'user_id': user.id,
@@ -48,18 +48,18 @@ class LeaveRequestController(BaseController):
         #     msg = "Cannot process request because user has pending leave request."
         #     return self.handle_response("Incomplete Request", conflict_handler(msg, 'UserName: '+user.email_address), status_code=409)
         
-        new_leave_request = self.leave_request_service.create_leave_request(user_id, leave_start, leave_end, event_type, description
+        new_leave_request = self.leave_request_service.create_leave_request(user.id, leave_start, leave_end, event_type, description
         )
 
-        subordinate_name = f'{user.first_name} {user.last_name}'
-        manager_name = f'{manager.first_name} {manager.last_name}'
+        user_name = f'{user.first_name.capitalize()} {user.last_name.capitalize()}'
+        manager_name = f'{user.manager.first_name.capitalize()} {user.manager.last_name.capitalize()}'
         email_subject = 'User Leave Request'
         send_email(
-            to=manager.email_address,
+            to=user.manager.email_address,
             subject=email_subject,
-            template='email_template',
-            user=manager_name.capitalize(),
-            subordinate=subordinate_name.capitalize()
+            template='request_notification_template',
+            user=user_name,
+            manager=manager_name,
         )
         print('Email Sent Successfully!')
 
@@ -101,6 +101,7 @@ class LeaveRequestController(BaseController):
         if status not in status_types:
             return self.handle_response(f"Invalid request type '{status}' ", status_code=404)
 
+
         user = self.user_service.get(user_id)
         manager = self.user_service.get(manager_id)
         leave_request = self.leave_request_service.get(leave_request_id)
@@ -117,6 +118,16 @@ class LeaveRequestController(BaseController):
                 status=status,
                 reason=reason,
                 actioned_by=manager_id
+            )
+            user_name = f'{user.first_name.capitalize()} {user.last_name.capitalize()}'
+            manager_name = f'{manager.first_name.capitalize()} {manager.last_name.capitalize()}'
+            email_subject = f'Leave Request - {status.capitalize()}'
+            send_email(
+                to=user.email_address,
+                subject=email_subject,
+                template='request_response_template',
+                user=user_name,
+                manager=manager_name
             )
             return self.handle_response('Ok', payload={'status': 'Updated!', 'leave_request': updated_leave_request.serialize()})
 

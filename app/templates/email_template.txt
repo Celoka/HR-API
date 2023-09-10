@@ -1,6 +1,0 @@
-Hello {{ user }},
-
-A staff - {{subordinate}},assigned to you has submitted a leave application. Please, take action as soon as possible.
-
-Thank you.
-OOH Team
