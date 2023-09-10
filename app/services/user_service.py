@@ -11,11 +11,15 @@ class User(BaseService):
                     first_name,
                     last_name,
                     email_address,
-                    password):
+                    password,
+                    role,
+                    bio=None):
         user = UserModel(
             first_name=first_name,
             last_name=last_name,
             email_address=email_address,
-            password=password)
+            password=password,
+            role=role,
+            bio=bio)
         user.save()
         return user

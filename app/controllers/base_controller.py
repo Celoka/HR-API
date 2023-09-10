@@ -27,3 +27,7 @@ class BaseController:
         response = jsonify(data)
         response.status_code = status_code
         return response
+    
+    def pagination_meta(self, paginator):
+        return {'total_rows': paginator.total, 'total_pages': paginator.pages, 'current_page': paginator.page,
+                'next_page': paginator.next_num, 'prev_page': paginator.prev_num}

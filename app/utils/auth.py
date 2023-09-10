@@ -51,7 +51,6 @@ class Auth:
             header = request_obj.headers.get('Authorization', None)
         else:
             header = request.headers.get('Authorization', None)
-        print(request_obj, request.headers, ">>>")
         if not header:
             raise Exception('Authorization Header is Expected')
         header_parts = header.split()

@@ -14,6 +14,16 @@ class LeaveRequestType(str, enum.Enum):
         return any(value == item.value for item in cls)
 
 
+class PaidLeave(str, enum.Enum):
+    yes = "Yes"
+    no = "No"
+
+    @classmethod
+    def has_value(cls, value):
+        return any(value == item.value for item in cls)
+
+
+
 class PermissionLevels(str, enum.Enum):
     super_admin = "Super admin"
     admin = "Admin"
@@ -22,3 +32,4 @@ class PermissionLevels(str, enum.Enum):
     @classmethod
     def has_value(cls, value):
         return any(value == item.value for item in cls)
+

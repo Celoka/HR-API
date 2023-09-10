@@ -12,8 +12,9 @@ class LeaveRequestService(BaseService):
                       leave_start,
                       leave_end,
                       event_type,
-                      status="Pending",
-                      description=None):
+                      description=None,
+                      status="Pending"
+                      ):
         leave_request = LeaveRequest(
             user_id=user_id,
             leave_start=leave_start,
