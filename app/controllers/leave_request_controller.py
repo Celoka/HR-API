@@ -37,19 +37,19 @@ class LeaveRequestController(BaseController):
         if not user.manager:
             return self.handle_response(f"Action cannot be performed. User has not been assigned a manager", status_code=403)
 
-        
         leave_requests = self.leave_request_service.filter_by(**{
             'user_id': user.id,
             'status': 'Pending'})
 
-        pending_requests = [leave_request for leave_request in leave_requests.items]
+        pending_requests = [
+            leave_request for leave_request in leave_requests.items]
 
         # if len(pending_requests) > 0:
         #     msg = "Cannot process request because user has pending leave request."
         #     return self.handle_response("Incomplete Request", conflict_handler(msg, 'UserName: '+user.email_address), status_code=409)
-        
+
         new_leave_request = self.leave_request_service.create_leave_request(user.id, leave_start, leave_end, event_type, description
-        )
+                                                                            )
 
         user_name = f'{user.first_name.capitalize()} {user.last_name.capitalize()}'
         manager_name = f'{user.manager.first_name.capitalize()} {user.manager.last_name.capitalize()}'
@@ -71,7 +71,7 @@ class LeaveRequestController(BaseController):
             **{'user_id': user_id})
         if leave_requests:
             event_list = [parse_calendar_events(event)
-                                  for event in events.items]
+                          for event in events.items]
         return self.handle_response('Ok', payload={'calendar_events': event_list})
 
     def get_leave_requests(self, user_id):
@@ -100,7 +100,6 @@ class LeaveRequestController(BaseController):
 
         if status not in status_types:
             return self.handle_response(f"Invalid request type '{status}' ", status_code=404)
-
 
         user = self.user_service.get(user_id)
         manager = self.user_service.get(manager_id)
@@ -132,7 +131,6 @@ class LeaveRequestController(BaseController):
             return self.handle_response('Ok', payload={'status': 'Updated!', 'leave_request': updated_leave_request.serialize()})
 
         return self.handle_response('Invalid or Incorrect leave_request_id given', status_code=400)
-
 
     def delete_leave_request_status(self, leave_request_id):
         leave_request = self.leave_request_service.get(leave_request_id)
