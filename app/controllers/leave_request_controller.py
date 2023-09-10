@@ -1,3 +1,5 @@
+from flask import request
+
 from app.controllers.base_controller import BaseController
 from app.services.leave_request_service import LeaveRequestService
 from app.services.user_service import User
@@ -19,7 +21,7 @@ class LeaveRequestController(BaseController):
         self.user_service = User()
 
     def create_leave_request(self):
-        current_user = self.request.user_obj
+        current_user = request.user_obj
         leave_start, leave_end, event_type, description = self.request_params(
             'leaveStart',
             'leaveEnd',
