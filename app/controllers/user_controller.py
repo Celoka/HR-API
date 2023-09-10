@@ -45,7 +45,14 @@ class UserController(BaseController):
         user = self.user_service.filter_first(email_address=email_address)
         if user:
             if bcrypt.check_password_hash(user.password, password):
-                token = Auth.create_token(user.id)
+                user_obj = {
+                    "user_id": user.id,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "email_address": user.email_address,
+                    "role": user.role
+                }
+                token = Auth.create_token(user_obj)
                 del user.password
                 return self.handle_response('Ok', payload={'user': user.serialize(), 'token': token})
             else:
@@ -59,36 +66,36 @@ class UserController(BaseController):
             user_leave_status) for user_leave_status in user_leave_statuses.items]
         return self.handle_response('OK', payload={'users_status': leave_status_list, 'meta': self.pagination_meta(user_leave_statuses)})
 
-    def get_manager(self, user_id):
-        user = self.user_service.get(user_id)
-        if not user:
-            return self.handle_response('User not found', status_code=404)
-        if user.manager:
-            return self.handle_response('OK', payload={
-                'managerId': user.manager.id,
-                'managerName': user.manager.first_name})
-        return self.handle_response('User does not have a manager')
+    # def get_manager(self, user_id):
+    #     user = self.user_service.get(user_id)
+    #     if not user:
+    #         return self.handle_response('User not found', status_code=404)
+    #     if user.manager:
+    #         return self.handle_response('OK', payload={
+    #             'managerId': user.manager.id,
+    #             'managerName': user.manager.first_name})
+    #     return self.handle_response('User does not have a manager')
 
-    def get_subordinates(self, user_id):
-        user = self.user_service.get(user_id)
-        if not user:
-            return self.handle_response('User not found', status_code=404)
-        subordinates = user.subordinates
-        subordinate_data = [{'id': s.id, 'firstName': s.first_name,
-                            'lastName': s.last_name} for s in subordinates]
-        return self.handle_response('OK', payload={'subordinateData': subordinate_data})
+    # def get_subordinates(self, user_id):
+    #     user = self.user_service.get(user_id)
+    #     if not user:
+    #         return self.handle_response('User not found', status_code=404)
+    #     subordinates = user.subordinates
+    #     subordinate_data = [{'id': s.id, 'firstName': s.first_name,
+    #                         'lastName': s.last_name} for s in subordinates]
+    #     return self.handle_response('OK', payload={'subordinateData': subordinate_data})
 
     def assign_manager(self):
-        subordinate_id, manager_id, super_admin_id = self.request_params('subordinateId', 'managerId', 'superAdminId')
+        current_user = self.request.user_obj
+        subordinate_id, manager_id = self.request_params('subordinateId', 'managerId')
 
-        super_admin_user = self.user_service.get(super_admin_id)
-        subordinate_user = self.user_service.get(subordinate_id)
         manager = self.user_service.get(manager_id)
+        subordinate_user = self.user_service.get(subordinate_id)
 
-        if not subordinate_user or not manager or not super_admin_user:
+        if not subordinate_user or not manager:
             return self.handle_response('Cannot perform this action. User or Manager or Admin User not found', status_code=403)
 
-        if super_admin_user.role != "Super admin":
+        if current_user.role != "Super admin":
             return self.handle_response('Cannot perform this action. Current user is not a super admin', status_code=403)
         
         if subordinate_user.manager_id == manager_id:

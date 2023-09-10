@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 class Auth:
 
     authentication_header_ignore = [
-        '/api/v1/user', '/api/v1/user/login','/api/v1/']
+        '/api/v1/user', '/api/v1/user/login', '/api/v1/']
 
     @staticmethod
     def create_token(user_id):
@@ -44,7 +44,7 @@ class Auth:
                 decoded = Auth.decode_token(token)
             except Exception as e:
                 return make_response(jsonify({'msg': str(e)}), 400)
-    
+
     @staticmethod
     def get_token(request_obj=None):
         if request_obj:
@@ -67,7 +67,7 @@ class Auth:
             jwtsecret = get_env('SECRET_KEY')
             decoded = jwt.decode(token, jwtsecret)
             return decoded
-        except jwt.ExpiredSignature:
+        except jwt.ExpiredSignatureError:
             return make_response(jsonify({'msg': 'Token is expired'})), 400
         except jwt.DecodeError:
             raise Exception('Error decoding')

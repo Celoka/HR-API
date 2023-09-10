@@ -9,7 +9,7 @@ leave_types = ["Holiday",
                "Time off",
                "Sick leave", "Maternity leave",
                "Paternity leave", "Training day"]
-status_types = ["Approved", "Reject", "Pending"]
+status_types = ["Approved", "Rejected", "Pending"]
 
 
 class LeaveRequestController(BaseController):
@@ -37,7 +37,7 @@ class LeaveRequestController(BaseController):
 
         if not user:
             return self.handle_response(f"This user does not exist", status_code=404)
-        
+
         leave_requests = self.leave_request_service.filter_by(**{
             'user_id': user.id,
             'status': 'Pending'})
@@ -47,19 +47,18 @@ class LeaveRequestController(BaseController):
         # if len(pending_requests) > 0:
         #     msg = "Cannot process request because user has pending leave request."
         #     return self.handle_response("Incomplete Request", conflict_handler(msg, 'UserName: '+user.email_address), status_code=409)
-        
-        new_leave_request = self.leave_request_service.create_leave_request(user_id, leave_start, leave_end, event_type, description
-        )
 
-        subordinate_name = f'{user.first_name} {user.last_name}'
-        manager_name = f'{manager.first_name} {manager.last_name}'
+        new_leave_request = self.leave_request_service.create_leave_request(user_id, leave_start, leave_end, event_type, description)
+
+        user_name = f'{user.first_name.capitalize()} {user.last_name.capitalize()}'
+        manager_name = f'{manager.first_name.capitalize()} {manager.last_name.capitalize()}'
         email_subject = 'User Leave Request'
         send_email(
             to=manager.email_address,
             subject=email_subject,
-            template='email_template',
-            user=manager_name.capitalize(),
-            subordinate=subordinate_name.capitalize()
+            template='request_notification_template',
+            user=user_name,
+            manager=manager_name
         )
         print('Email Sent Successfully!')
 
@@ -71,7 +70,7 @@ class LeaveRequestController(BaseController):
             **{'user_id': user_id})
         if leave_requests:
             event_list = [parse_calendar_events(event)
-                                  for event in events.items]
+                          for event in events.items]
         return self.handle_response('Ok', payload={'calendar_events': event_list})
 
     def get_leave_requests(self, user_id):
@@ -108,7 +107,7 @@ class LeaveRequestController(BaseController):
         if not user:
             return self.handle_response('User not found', status_code=404)
 
-        if not (user.manager_id == manager_id or manager.role == "Super admin"):
+        if not (user.manager_id == manager_id or manager.role == 'Super admin'):
             return self.handle_response('This user is not the subordinate of this manager, therefore this action cannot be processed', status_code=400)
 
         if leave_request:
@@ -118,10 +117,21 @@ class LeaveRequestController(BaseController):
                 reason=reason,
                 actioned_by=manager_id
             )
+
+            user_name = f'{user.first_name.capitalize()} {user.last_name.capitalize()}'
+            manager_name = f'{manager.first_name.capitalize()} {manager.last_name.capitalize()}'
+            email_subject = 'User Leave Request'
+            send_email(
+                to=manager.email_address,
+                subject=email_subject,
+                template='request_response_template',
+                user=user_name,
+                manager=manager_name
+            )
+            print('Email Sent Successfully!')
             return self.handle_response('Ok', payload={'status': 'Updated!', 'leave_request': updated_leave_request.serialize()})
 
         return self.handle_response('Invalid or Incorrect leave_request_id given', status_code=400)
-
 
     def delete_leave_request_status(self, leave_request_id):
         leave_request = self.leave_request_service.get(leave_request_id)
