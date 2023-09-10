@@ -1,6 +1,6 @@
 Hello {{ user }},
 
-{{subordinate}}, a staff assigned to you created a leave request. Please, take action as soon as possible.
+A staff - {{subordinate}},assigned to you has submitted a leave application. Please, take action as soon as possible.
 
 Thank you.
 OOH Team

@@ -58,8 +58,8 @@ class LeaveRequestController(BaseController):
             to=manager.email_address,
             subject=email_subject,
             template='email_template',
-            user=manager_name,
-            subordinate=subordinate_name
+            user=manager_name.capitalize(),
+            subordinate=subordinate_name.capitalize()
         )
         print('Email Sent Successfully!')
 
