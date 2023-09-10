@@ -9,7 +9,7 @@ leave_types = ["Holiday",
                "Time off",
                "Sick leave", "Maternity leave",
                "Paternity leave", "Training day"]
-status_types = ["Approved", "Reject", "Pending"]
+status_types = ["Approved", "Rejected", "Pending"]
 
 
 class LeaveRequestController(BaseController):
