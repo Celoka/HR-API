@@ -1,5 +1,5 @@
-from flask.cli import FlaskGroup
 from flask import request
+from flask.cli import FlaskGroup
 
 from app.utils.auth import Auth
 from app import app, db
