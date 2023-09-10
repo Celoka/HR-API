@@ -82,7 +82,9 @@ class UserController(BaseController):
         subordinate_id, manager_id, super_admin_id = self.request_params('subordinateId', 'managerId', 'superAdminId')
 
         super_admin_user = self.user_service.get(super_admin_id)
+
         subordinate_user = self.user_service.get(subordinate_id)
+        print(subordinate_user, ">>>")
         manager = self.user_service.get(manager_id)
 
         if not subordinate_user or not manager or not super_admin_user:
