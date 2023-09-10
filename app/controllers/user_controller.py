@@ -79,16 +79,16 @@ class UserController(BaseController):
         return self.handle_response('OK', payload={'subordinateData': subordinate_data})
 
     def assign_manager(self):
-        subordinate_id, manager_id, admin_id = self.request_params('subordinateId', 'managerId', 'adminId')
+        subordinate_id, manager_id, super_admin_id = self.request_params('subordinateId', 'managerId', 'superAdminId')
 
-        admin_user = self.user_service.get(admin_id)
+        super_admin_user = self.user_service.get(super_admin_id)
         subordinate_user = self.user_service.get(subordinate_id)
         manager = self.user_service.get(manager_id)
 
-        if not subordinate_user or not manager or not admin_user:
+        if not subordinate_user or not manager or not super_admin_user:
             return self.handle_response('Cannot perform this action. User or Manager or Admin User not found', status_code=403)
 
-        if admin_user.role != "Super admin":
+        if super_admin_user.role != "Super admin":
             return self.handle_response('Cannot perform this action. Current user is not a super admin', status_code=403)
         
         if subordinate_user.manager_id == manager_id:
