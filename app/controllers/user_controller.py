@@ -41,10 +41,8 @@ class UserController(BaseController):
         return self.create_user(role="Super admin")
 
     def login(self):
-        email_address, password = self.request_params(
-            'emailAddress', 'password')
-        user = self.user_service.filter_first(
-            **{'email_address': email_address})
+        email_address, password = self.request_params('emailAddress', 'password')
+        user = self.user_service.filter_first(email_address=email_address)
         if user:
             if bcrypt.check_password_hash(user.password, password):
                 token = Auth.create_token(user.id)
