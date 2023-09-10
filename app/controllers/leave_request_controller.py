@@ -31,6 +31,10 @@ class LeaveRequestController(BaseController):
 
         user = self.user_service.get(user_id)
         manager = self.user_service.get(user.manager_id)
+
+        print(user, ">>>>")
+        print(manager, ">>>")
+
         if manager:
             return self.handle_response(f"Action cannot be performed. User has not been assigned a manager", status_code=403)
 
