@@ -42,13 +42,15 @@ class LeaveRequestController(BaseController):
             'user_id': user.id,
             'status': 'Pending'})
 
-        pending_requests = [leave_request for leave_request in leave_requests.items]
+        pending_requests = [
+            leave_request for leave_request in leave_requests.items]
 
         # if len(pending_requests) > 0:
         #     msg = "Cannot process request because user has pending leave request."
         #     return self.handle_response("Incomplete Request", conflict_handler(msg, 'UserName: '+user.email_address), status_code=409)
 
-        new_leave_request = self.leave_request_service.create_leave_request(user_id, leave_start, leave_end, event_type, description)
+        new_leave_request = self.leave_request_service.create_leave_request(
+            user_id, leave_start, leave_end, event_type, description)
 
         user_name = f'{user.first_name.capitalize()} {user.last_name.capitalize()}'
         manager_name = f'{manager.first_name.capitalize()} {manager.last_name.capitalize()}'
