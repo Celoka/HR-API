@@ -10,7 +10,7 @@ class Auth:
         '/api/v1/user', '/api/v1/user/login','/api/v1/']
 
     @staticmethod
-    def create_token(user_id):
+    def create_token(user_object):
         """
         Generates the Auth Token
         :return: string
@@ -19,7 +19,7 @@ class Auth:
             payload = {
                 'exp': datetime.now() + timedelta(days=1, seconds=120),
                 'iat': datetime.now(),
-                'sub': user_id
+                'sub': user_object
             }
             return jwt.encode(
                 payload,
@@ -34,16 +34,13 @@ class Auth:
     def check_token():
         if request.method != 'OPTIONS':
             for endpoint in Auth.authentication_header_ignore:
-                if request.path.find(endpoint) > -1:
-                    return None
-                try:
-                    token = Auth.get_token()
-                except Exception as e:
-                    return make_response(jsonify({'msg': str(e)}), 400)
-            try:
-                decoded = Auth.decode_token(token)
-            except Exception as e:
-                return make_response(jsonify({'msg': str(e)}), 400)
+                if request.path.startswith(endpoint):
+                    try:
+                        token = Auth.get_token()
+                        return Auth.decode_token(token)
+                    except Exception as e:
+                        return make_response(jsonify({'msg': str(e)}), 400)
+            return None
     
     @staticmethod
     def get_token(request_obj=None):
@@ -64,10 +61,12 @@ class Auth:
     @staticmethod
     def decode_token(token):
         try:
-            jwtsecret = get_env('SECRET_KEY')
-            decoded = jwt.decode(token, jwtsecret)
+            decoded = jwt.decode(
+                token, 
+                get_env('SECRET_KEY'),
+                algorithms=['HS256'])
             return decoded
-        except jwt.ExpiredSignature:
+        except jwt.ExpiredSignatureError:
             return make_response(jsonify({'msg': 'Token is expired'})), 400
-        except jwt.DecodeError:
-            raise Exception('Error decoding')
+        except jwt.DecodeError as e:
+            raise Exception(f'Error decoding {e}')
