@@ -122,7 +122,7 @@ class LeaveRequestController(BaseController):
 
             user_name = f'{user.first_name.capitalize()} {user.last_name.capitalize()}'
             manager_name = f'{manager.first_name.capitalize()} {manager.last_name.capitalize()}'
-            email_subject = 'User Leave Request'
+            email_subject = f'Leave Request {status}'
             send_email(
                 to=manager.email_address,
                 subject=email_subject,
