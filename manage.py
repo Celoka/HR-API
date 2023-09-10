@@ -11,6 +11,8 @@ cli = FlaskGroup(app)
 @app.before_request
 def check_token():
     decoded_token = Auth.check_token()
+
+    print(decoded_token, ">>>")
     request.user_obj = decoded_token['sub']
 
 @cli.command()
