@@ -51,15 +51,15 @@ class LeaveRequestController(BaseController):
         new_leave_request = self.leave_request_service.create_leave_request(user_id, leave_start, leave_end, event_type, description
         )
 
-        subordinate_name = f'{user.first_name.capitalize()} {user.last_name.capitalize()}'
+        user_name = f'{user.first_name.capitalize()} {user.last_name.capitalize()}'
         manager_name = f'{manager.first_name.capitalize()} {manager.last_name.capitalize()}'
         email_subject = 'User Leave Request'
         send_email(
             to=manager.email_address,
             subject=email_subject,
-            template='email_template',
-            user=manager_name,
-            subordinate=subordinate_name
+            template='request_notification_template',
+            user=user_name,
+            manager=manager_name,
         )
         print('Email Sent Successfully!')
 
@@ -117,6 +117,16 @@ class LeaveRequestController(BaseController):
                 status=status,
                 reason=reason,
                 actioned_by=manager_id
+            )
+            user_name = f'{user.first_name.capitalize()} {user.last_name.capitalize()}'
+            manager_name = f'{manager.first_name.capitalize()} {manager.last_name.capitalize()}'
+            email_subject = f'Leave Request - {status.capitalize()}'
+            send_email(
+                to=manager.email_address,
+                subject=email_subject,
+                template='request_response_template',
+                user=user_name,
+                manager=manager_name
             )
             return self.handle_response('Ok', payload={'status': 'Updated!', 'leave_request': updated_leave_request.serialize()})
 
