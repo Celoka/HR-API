@@ -30,9 +30,8 @@ class LeaveRequestController(BaseController):
             return self.handle_response(f"Invalid request type '{event_type}' ", status_code=404)
 
         user = self.user_service.get(user_id)
-        manager = self.user_service.get(user.manager_id)
 
-        if not manager:
+        if not user.manager:
             return self.handle_response(f"Action cannot be performed. User has not been assigned a manager", status_code=403)
 
         if not user:
@@ -53,10 +52,10 @@ class LeaveRequestController(BaseController):
             user_id, leave_start, leave_end, event_type, description)
 
         user_name = f'{user.first_name.capitalize()} {user.last_name.capitalize()}'
-        manager_name = f'{manager.first_name.capitalize()} {manager.last_name.capitalize()}'
+        manager_name = f'{user.manager.first_name.capitalize()} {user.manager.last_name.capitalize()}'
         email_subject = 'User Leave Request'
         send_email(
-            to=manager.email_address,
+            to=user.manager.email_address,
             subject=email_subject,
             template='request_notification_template',
             user=user_name,
@@ -104,6 +103,7 @@ class LeaveRequestController(BaseController):
 
         user = self.user_service.get(user_id)
         manager = self.user_service.get(manager_id)
+
         leave_request = self.leave_request_service.get(leave_request_id)
 
         if not user:
