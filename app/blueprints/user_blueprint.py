@@ -41,3 +41,8 @@ def get_subordinate(user_id):
 @user_blueprint.route('/assign-manager', methods=['POST'])
 def assign_manager():
     return user_controller.assign_manager()
+
+
+@user_blueprint.route('/uplift-user', methods=['POST'])
+def uplift_staff_to_manager():
+    return user_controller.uplift_staff_to_manager()

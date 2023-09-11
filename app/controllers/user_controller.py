@@ -7,7 +7,11 @@ from app.utils.auth import Auth
 from app.utils.helper import parse_leave_request_object
 
 
-role_type = ["Super admin", "Admin", "Staff"]
+STAFF = 'Staff'
+ADMIN = 'Admin'
+SUPER_ADMIN = 'Super admin'
+ROLE_TYPE = [SUPER_ADMIN, ADMIN]
+
 
 
 class UserController(BaseController):
@@ -35,10 +39,10 @@ class UserController(BaseController):
         return self.handle_response('OK', payload={'user': user.serialize()}, status_code=201)
 
     def create_staff_user(self):
-        return self.create_user(role="Staff")
+        return self.create_user(role=STAFF)
 
     def create_super_admin_user(self):
-        return self.create_user(role="Super admin")
+        return self.create_user(role=SUPER_ADMIN)
 
     def login(self):
         email_address, password = self.request_params('emailAddress', 'password')
@@ -46,11 +50,11 @@ class UserController(BaseController):
         if user:
             if bcrypt.check_password_hash(user.password, password):
                 user_obj = {
-                    "user_id": user.id,
-                    "first_name": user.first_name,
-                    "last_name": user.last_name,
-                    "email_address": user.email_address,
-                    "role": user.role
+                    'user_id': user.id,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'email_address': user.email_address,
+                    'role': user.role
                 }
                 token = Auth.create_token(user_obj)
                 del user.password
@@ -86,25 +90,43 @@ class UserController(BaseController):
     #     return self.handle_response('OK', payload={'subordinateData': subordinate_data})
 
     def assign_manager(self):
-        current_user = self.request.user_obj
-        subordinate_id, manager_id = self.request_params('subordinateId', 'managerId')
+        subordinate_id, manager_id, super_admin_id = self.request_params('subordinateId', 'managerId', 'superAdminId')
 
         manager = self.user_service.get(manager_id)
         subordinate_user = self.user_service.get(subordinate_id)
+        super_admin = self.user_service.get(super_admin_id)
 
         if not subordinate_user or not manager:
             return self.handle_response('Cannot perform this action. User or Manager or Admin User not found', status_code=403)
 
-        if current_user.role != "Super admin":
+        if super_admin.role != SUPER_ADMIN:
             return self.handle_response('Cannot perform this action. Current user is not a super admin', status_code=403)
         
         if subordinate_user.manager_id == manager_id:
             return self.handle_response('A manager has been assigned to this user.', status_code=409)
         
-        if manager.role not in ["Super admin"  "Admin"]:
+        if manager.role not in ROLE_TYPE:
             self.user_service.update(manager, role='Admin')
 
         subordinate_user.manager = manager
         db.session.commit()
 
         return self.handle_response('Manager assigned successfully')
+ 
+
+    def uplift_staff_to_manager(self):
+        user_id, super_admin_id = self.request_params('userId', 'superAdminId')
+
+        user = self.user_service.get(user_id)
+        super_admin = self.user_service.get(super_admin_id)
+
+        if not user or not super_admin:
+            return self.handle_response('Cannot perform this action. User or Admin User not found', status_code=403)
+        
+        if super_admin.role != SUPER_ADMIN:
+            return self.handle_response('Cannot perform this action. Current user is not a super admin', status_code=403)            
+        
+        if user.role not in ROLE_TYPE:
+            self.user_service.update(user, role=ADMIN)
+            return self.handle_response('Admin role assigned successfully')
+        return self.handle_response('This user is already an admin', status_code=200)
