@@ -65,17 +65,17 @@ class UserController(BaseController):
             return self.handle_response('User does not exist', status_code=404)
 
     def list_users_and_status(self):
-        # user_leave_statuses = self.user_leave_request_service.fetch_all()
-        # user_leave_statuses = self.user_service.fetch_all()
-        # leave_status_list = [parse_leave_request_object(
-        #     user_leave_status) for user_leave_status in user_leave_statuses.items]
-        # leave_status_list = [user_leave_status.serialize() for user_leave_status in user_leave_statuses.items]
         users_with_leave_requests = []
         all_users = self.user_service.fetch_all()
 
         for user in all_users:
             user_data = user.serialize()
-            del user_data['password']
+
+            if user.manager:
+                manager_name = f'{user.manager.first_name} {user.manage.last_name}'
+                user_data['managerName'] = manager_name
+            else:
+                user_data['managerName'] = None
 
             leave_requests = self.leave_request_service.filter_by(**{'user_id': user.id})
             if leave_requests:
@@ -84,6 +84,10 @@ class UserController(BaseController):
                 leave_request_list = []
             
             user_data['leave_requests'] = leave_request_list
+
+            del user_data['managerId']
+            del user_data['password']
+
             users_with_leave_requests.append(user_data)
     
         return self.handle_response('OK', payload={'users': users_with_leave_requests })
