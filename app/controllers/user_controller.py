@@ -65,7 +65,8 @@ class UserController(BaseController):
             return self.handle_response('User does not exist', status_code=404)
 
     def list_users_and_status(self):
-        user_leave_statuses = self.user_leave_request_service.fetch_all()
+        # user_leave_statuses = self.user_leave_request_service.fetch_all()
+        user_leave_statuses = self.user_service.fetch_all()
         leave_status_list = [parse_leave_request_object(
             user_leave_status) for user_leave_status in user_leave_statuses.items]
         return self.handle_response('OK', payload={'users_status': leave_status_list, 'meta': self.pagination_meta(user_leave_statuses)})
