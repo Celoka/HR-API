@@ -72,10 +72,14 @@ class UserController(BaseController):
             user_data = user.serialize()
 
             if user.manager:
+                manager_obj = {}
                 manager_name = f'{user.manager.first_name} {user.manager.last_name}'
-                user_data['managerName'] = manager_name
+                manager_obj['managerName'] = manager_name
+                manager_obj['managerid'] = user.manager
+
+                user_data['manager'] = manager_obj
             else:
-                user_data['managerName'] = None
+                user_data['managerName'] = manager_obj
 
             leave_requests = self.leave_request_service.filter_by(**{'user_id': user.id})
             if leave_requests:
