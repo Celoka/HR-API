@@ -19,7 +19,7 @@ class UserController(BaseController):
         BaseController.__init__(self, request)
         self.user_service = User()
         self.employee_service = EmployeeService()
-        self.user_leave_request_service = LeaveRequestService()
+        self.leave_request_service = LeaveRequestService()
 
     def create_user(self, role="Staff"):
         first_name, last_name, email_address, password = self.request_params(
@@ -70,24 +70,20 @@ class UserController(BaseController):
         # leave_status_list = [parse_leave_request_object(
         #     user_leave_status) for user_leave_status in user_leave_statuses.items]
         # leave_status_list = [user_leave_status.serialize() for user_leave_status in user_leave_statuses.items]
-
         users_with_leave_requests = []
         all_users = self.user_service.fetch_all()
 
         for user in all_users:
             user_data = user.serialize()
-            user_data['leave_requests'] = []
             del user_data['password']
 
-            for leave_request in user.leave_requests:
-                leave_request_data = {
-                    'leave_request_id': leave_request.id,
-                    'start_date': leave_request.start_date,
-                    'end_date': leave_request.end_date,
-                    'status': leave_request.status,
-                }
-
-                user_data['leave_requests'].append(leave_request_data)
+            leave_requests = self.leave_request_service.filter_by(**{'user_id': user.id})
+            if leave_requests:
+                leave_request_list = [leave_request.serialize() for leave_request in leave_requests.items]
+            else:
+                leave_request_list = []
+            
+            user_data['leave_requests'] = leave_request_list
             users_with_leave_requests.append(user_data)
     
         return self.handle_response('OK', payload={'users_status': users_with_leave_requests })
