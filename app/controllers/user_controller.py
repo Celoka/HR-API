@@ -75,7 +75,7 @@ class UserController(BaseController):
                 manager_name = f'{user.manager.first_name} {user.manager.last_name}'
                 user_data['manager'] = {
                     'managerName': manager_name,
-                    'managerid': user.manager.id
+                    'managerId': user.manager.id
                 }
             else:
                 user_data['manager'] = None
