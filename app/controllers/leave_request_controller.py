@@ -110,7 +110,7 @@ class LeaveRequestController(BaseController):
             return self.handle_response('User not found', status_code=404)
 
         if not user.manager.id == manager_id or not manager.role == "Super admin":
-            return self.handle_response('Only a manager assigned to this user can approve or reject a leave application', status_code=400)
+            return self.handle_response('Only a manager assigned to this user can approve or reject a leave application', status_code=403)
 
         if leave_request:
             updated_leave_request = self.leave_request_service.update(
