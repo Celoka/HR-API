@@ -109,8 +109,8 @@ class LeaveRequestController(BaseController):
         if not user:
             return self.handle_response('User not found', status_code=404)
 
-        if not (user.manager_id == manager_id or manager.role == 'Super admin'):
-            return self.handle_response('This user is not the subordinate of this manager, therefore this action cannot be processed', status_code=400)
+        if not user.manager == manager_id:
+            return self.handle_response('Only a manager can approve or reject a user', status_code=400)
 
         if leave_request:
             updated_leave_request = self.leave_request_service.update(
