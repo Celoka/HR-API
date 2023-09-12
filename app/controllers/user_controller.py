@@ -86,7 +86,7 @@ class UserController(BaseController):
             user_data['leave_requests'] = leave_request_list
             users_with_leave_requests.append(user_data)
     
-        return self.handle_response('OK', payload={'users_status': users_with_leave_requests })
+        return self.handle_response('OK', payload={'users': users_with_leave_requests })
 
     # def get_manager(self, user_id):
     #     user = self.user_service.get(user_id)
