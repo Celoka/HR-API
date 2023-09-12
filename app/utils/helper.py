@@ -24,6 +24,10 @@ def parse_leave_request_object(leave_request_obj):
     result['emailAddress'] = leave_request_obj.user.email_address
     return result
 
+def remove_password(obj):
+    del obj['password']
+    return obj
+
 
 def parse_calendar_events(model_obj):
     event = model_obj.serialize()
