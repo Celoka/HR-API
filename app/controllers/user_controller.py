@@ -78,7 +78,7 @@ class UserController(BaseController):
                     'managerid': user.manager.id
                 }
             else:
-                user_data['managerName'] = None
+                user_data['manager'] = None
 
             leave_requests = self.leave_request_service.filter_by(user_id=user.id)
             user_data['leave_requests'] = [leave_request.serialize()
