@@ -78,7 +78,6 @@ class UserController(BaseController):
             user_data = user.serialize()
             user_data['leave_requests'] = []
             del user_data['password']
-            del user_data['subordinates']
 
             for leave_request in user.leave_requests:
                 leave_request_data = {
