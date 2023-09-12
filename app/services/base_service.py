@@ -15,7 +15,7 @@ class BaseService:
         return model_instance
     
     def fetch_all(self):
-        return self._model.query.paginate(error_out=False)
+        return self._model.query.all()
 
     def filter_by(self, **kwargs):
         return self._model.query.filter_by(**kwargs).paginate(error_out=False)

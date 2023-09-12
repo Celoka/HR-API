@@ -66,11 +66,32 @@ class UserController(BaseController):
 
     def list_users_and_status(self):
         # user_leave_statuses = self.user_leave_request_service.fetch_all()
-        user_leave_statuses = self.user_service.fetch_all()
+        # user_leave_statuses = self.user_service.fetch_all()
         # leave_status_list = [parse_leave_request_object(
         #     user_leave_status) for user_leave_status in user_leave_statuses.items]
-        leave_status_list = [remove_password(user_leave_status.serialize()) for user_leave_status in user_leave_statuses.items]
-        return self.handle_response('OK', payload={'users_status': leave_status_list, 'meta': self.pagination_meta(user_leave_statuses)})
+        # leave_status_list = [user_leave_status.serialize() for user_leave_status in user_leave_statuses.items]
+
+        users_with_leave_requests = []
+        all_users = self.user_service.fetch_all()
+
+        for user in all_users:
+            user_data = user.serialize()
+            user_data['leave_requests'] = []
+            del user_data['password']
+            del user_data['subordinates']
+
+            for leave_request in user.leave_requests:
+                leave_request_data = {
+                    'leave_request_id': leave_request.id,
+                    'start_date': leave_request.start_date,
+                    'end_date': leave_request.end_date,
+                    'status': leave_request.status,
+                }
+
+                user_data['leave_requests'].append(leave_request_data)
+            users_with_leave_requests.append(user_data)
+    
+        return self.handle_response('OK', payload={'users_status': users_with_leave_requests })
 
     # def get_manager(self, user_id):
     #     user = self.user_service.get(user_id)
