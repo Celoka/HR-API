@@ -72,29 +72,25 @@ class UserController(BaseController):
             user_data = user.serialize()
 
             if user.manager:
-                manager_obj = {}
                 manager_name = f'{user.manager.first_name} {user.manager.last_name}'
-                manager_obj['managerName'] = manager_name
-                manager_obj['managerid'] = user.manager
-
-                user_data['manager'] = manager_obj
+                user_data['manager'] = {
+                    'managerName': manager_name,
+                    'managerid': user.manager.id
+                }
             else:
-                user_data['managerName'] = manager_obj
+                user_data['managerName'] = None
 
-            leave_requests = self.leave_request_service.filter_by(**{'user_id': user.id})
-            if leave_requests:
-                leave_request_list = [leave_request.serialize() for leave_request in leave_requests.items]
-            else:
-                leave_request_list = []
-            
-            user_data['leave_requests'] = leave_request_list
+            leave_requests = self.leave_request_service.filter_by(user_id=user.id)
+            user_data['leave_requests'] = [leave_request.serialize()
+                                        for leave_request in leave_requests]
 
             del user_data['managerId']
             del user_data['password']
 
             users_with_leave_requests.append(user_data)
-    
-        return self.handle_response('OK', payload={'users': users_with_leave_requests })
+
+        return self.handle_response('OK', payload={'users': users_with_leave_requests})
+
 
     # def get_manager(self, user_id):
     #     user = self.user_service.get(user_id)
