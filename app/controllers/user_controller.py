@@ -72,7 +72,7 @@ class UserController(BaseController):
             user_data = user.serialize()
 
             if user.manager:
-                manager_name = f'{user.manager.first_name} {user.manage.last_name}'
+                manager_name = f'{user.manager.first_name} {user.manager.last_name}'
                 user_data['managerName'] = manager_name
             else:
                 user_data['managerName'] = None
