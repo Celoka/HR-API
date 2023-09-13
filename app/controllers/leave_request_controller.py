@@ -95,7 +95,6 @@ class LeaveRequestController(BaseController):
             return self.handle_response(f"Invalid request type '{status}' ", status_code=404)
 
         user = self.user_service.get(user_id)
-        manager = self.user_service.get(manager_id)
 
         leave_request = self.leave_request_service.get(leave_request_id)
 
@@ -111,7 +110,7 @@ class LeaveRequestController(BaseController):
             )
 
             user_name = f'{user.first_name.capitalize()} {user.last_name.capitalize()}'
-            manager_name = f'{manager.first_name.capitalize()} {manager.last_name.capitalize()}'
+            manager_name = f'{user.manager.first_name.capitalize()} {user.manager.last_name.capitalize()}'
             email_subject = f'Leave Request {status}'
             send_email(
                 to=manager.email_address,
