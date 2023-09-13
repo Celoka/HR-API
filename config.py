@@ -19,7 +19,7 @@ class DevConfig(Config):
 
 class TestConfig(Config):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = get_env('DATABASE_TEST_URL')
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///test.db'
     DEBUG = True
 
 

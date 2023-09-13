@@ -41,13 +41,6 @@ class LeaveRequestController(BaseController):
             'user_id': user.id,
             'status': 'Pending'})
 
-        pending_requests = [
-            leave_request for leave_request in leave_requests.items]
-
-        # if len(pending_requests) > 0:
-        #     msg = "Cannot process request because user has pending leave request."
-        #     return self.handle_response("Incomplete Request", conflict_handler(msg, 'UserName: '+user.email_address), status_code=409)
-
         new_leave_request = self.leave_request_service.create_leave_request(
             user_id, leave_start, leave_end, event_type, description)
 
@@ -108,9 +101,6 @@ class LeaveRequestController(BaseController):
 
         if not user:
             return self.handle_response('User not found', status_code=404)
-
-        if not user.manager.id == manager_id or not manager.role == "Super admin":
-            return self.handle_response('Only a manager assigned to this user can approve or reject a leave application', status_code=403)
 
         if leave_request:
             updated_leave_request = self.leave_request_service.update(

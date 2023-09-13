@@ -11,7 +11,15 @@ from app.utils.helper import get_env
 
 app = Flask(__name__)
 
-app.config.from_object(get_env("FLASK_ENV"))
+env = get_env('FLASK_ENV')
+
+if env == 'development':
+    app.config.from_object('config.DevConfig')
+elif env == 'testing':
+    app.config.from_object('config.TestConfig')
+elif env == 'production':
+    app.config.from_object('config.ProdConfig')
+
 app.config['MAIL_SERVER'] = get_env('MAIL_SERVER')
 app.config['MAIL_PORT'] = int(get_env('MAIL_PORT'))
 app.config['MAIL_USE_TLS'] = True
